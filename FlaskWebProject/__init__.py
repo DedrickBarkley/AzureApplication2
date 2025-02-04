@@ -1,6 +1,3 @@
-"""
-The flask application package.
-"""
 import logging
 from flask import Flask
 from config import Config
@@ -12,9 +9,11 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Set logging levels and handlers
-app.logger.setLevel(logging.WARNING)
+app.logger.setLevel(logging.DEBUG)  # Set to DEBUG to capture all log levels
 streamHandler = logging.StreamHandler()
-streamHandler.setLevel(logging.WARNING)
+streamHandler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+streamHandler.setFormatter(formatter)
 app.logger.addHandler(streamHandler)
 
 Session(app)
