@@ -1,17 +1,38 @@
 """
-Routes and views for the flask application.
+The flask application package.
 """
-
-from datetime import datetime
-from flask import render_template, flash, redirect, request, session, url_for
-from werkzeug.urls import url_parse
+import FlaskWebProject.views
+import logging
+from logging.handlers import RotatingFileHandler
+import os
+from flask import Flask, render_template, request, redirect, url_for
 from config import Config
-from FlaskWebProject import app, db
-from FlaskWebProject.forms import LoginForm, PostForm
-from flask_login import current_user, login_user, logout_user, login_required
-from FlaskWebProject.models import User, Post
-import msal
-import uuid
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, current_user, login_required
+from flask_session import Session
+from FlaskWebProject.models import User, Post, PostForm
+
+app = Flask(__name__)
+app.config.from_object(Config)
+
+# Set up logging
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+
+file_handler = RotatingFileHandler('logs/flask_app.log', maxBytes=10240, backupCount=10)
+file_handler.setFormatter(logging.Formatter(
+    '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+))
+file_handler.setLevel(logging.INFO)
+app.logger.addHandler(file_handler)
+
+app.logger.setLevel(logging.INFO)
+app.logger.info('Flask application startup')
+
+Session(app)
+db = SQLAlchemy(app)
+login = LoginManager(app)
+login.login_view = 'login'
 
 imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.net/' + app.config['BLOB_CONTAINER']  + '/'
 
@@ -21,7 +42,7 @@ imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.n
 def home():
     user = User.query.filter_by(username=current_user.username).first_or_404()
     posts = Post.query.all()
-    log= request.values.get('log_button')
+    log = request.values.get('log_button')
     if log:
         if log == 'info':
             app.logger.info('No issue.')
@@ -35,7 +56,8 @@ def home():
     return render_template(
         'index.html',
         title='Home Page',
-        posts=posts,log = log
+        posts=posts,
+        log=log
     )
 
 
