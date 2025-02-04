@@ -175,3 +175,15 @@ def _build_auth_url(authority=None, scopes=None, state=None):
         scopes or [],
         state=state or str(uuid.uuid4()),
         redirect_uri=url_for('authorized', _external=True, _scheme='https'))
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    app.logger.error('Server Error: %s', (error))
+    return render_template('500.html'), 500
+
+@app.errorhandler(Exception)
+def unhandled_exception(e):
+    app.logger.error('Unhandled Exception: %s', (e))
+    return render_template('500.html'), 500
+
