@@ -32,7 +32,7 @@ class Config(object):
 
     CLIENT_ID = "a50f50bb-462f-40d5-9043-b741a73b3afd"
 
-    REDIRECT_PATH = "https://udacitycmss.azurewebsites.net/.auth/login/aad/callback"  # Used to form an absolute URL; must match to app's redirect_uri set in AAD
+    REDIRECT_PATH = "/authorized"  # Used to form an absolute URL; must match to app's redirect_uri set in AAD
 
     # You can find the proper permission names from this document
     # https://docs.microsoft.com/en-us/graph/permissions-reference
