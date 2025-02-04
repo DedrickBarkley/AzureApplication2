@@ -37,8 +37,8 @@ def home():
         'index.html',
         title='Home Page',
         posts=posts,
-        log=log
-    )
+        log=log)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
