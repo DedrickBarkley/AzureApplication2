@@ -6,6 +6,9 @@ from azure.storage.blob import BlockBlobService
 import string, random
 from werkzeug.utils import secure_filename
 from flask import flash
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
 
 blob_container = app.config['BLOB_CONTAINER']
 blob_service = BlockBlobService(account_name=app.config['BLOB_ACCOUNT'], account_key=app.config['BLOB_STORAGE_KEY'])
@@ -52,17 +55,23 @@ class Post(db.Model):
         self.user_id = userId
 
         if file:
-            filename = secure_filename(file.filename);
-            fileextension = filename.rsplit('.',1)[1];
-            Randomfilename = id_generator();
-            filename = Randomfilename + '.' + fileextension;
+            filename = secure_filename(file.filename)
+            fileextension = filename.rsplit('.', 1)[1]
+            Randomfilename = id_generator()
+            filename = Randomfilename + '.' + fileextension
             try:
                 blob_service.create_blob_from_stream(blob_container, filename, file)
-                if(self.image_path):
+                if self.image_path:
                     blob_service.delete_blob(blob_container, self.image_path)
             except Exception:
                 flash(Exception)
-            self.image_path =  filename
+            self.image_path = filename
         if new:
             db.session.add(self)
         db.session.commit()
+
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    author = StringField('Author', validators=[DataRequired()])
+    body = StringField('Body', validators=[DataRequired()])
+    submit = SubmitField('Submit')
