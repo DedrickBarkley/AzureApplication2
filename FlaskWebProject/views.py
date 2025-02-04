@@ -1,38 +1,13 @@
-"""
-The flask application package.
-"""
-import FlaskWebProject.views
-import logging
-from logging.handlers import RotatingFileHandler
-import os
-from flask import Flask, render_template, request, redirect, url_for
+from datetime import datetime
+from flask import render_template, flash, redirect, request, session, url_for
+from werkzeug.urls import url_parse
 from config import Config
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, current_user, login_required
-from flask_session import Session
-from FlaskWebProject.models import User, Post, PostForm
-
-app = Flask(__name__)
-app.config.from_object(Config)
-
-# Set up logging
-if not os.path.exists('logs'):
-    os.mkdir('logs')
-
-file_handler = RotatingFileHandler('logs/flask_app.log', maxBytes=10240, backupCount=10)
-file_handler.setFormatter(logging.Formatter(
-    '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-))
-file_handler.setLevel(logging.INFO)
-app.logger.addHandler(file_handler)
-
-app.logger.setLevel(logging.INFO)
-app.logger.info('Flask application startup')
-
-Session(app)
-db = SQLAlchemy(app)
-login = LoginManager(app)
-login.login_view = 'login'
+from FlaskWebProject import app, db
+from FlaskWebProject.forms import LoginForm, PostForm
+from flask_login import current_user, login_user, logout_user, login_required
+from FlaskWebProject.models import User, Post
+import msal
+import uuid
 
 imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.net/' + app.config['BLOB_CONTAINER']  + '/'
 
@@ -56,10 +31,8 @@ def home():
     return render_template(
         'index.html',
         title='Home Page',
-        posts=posts,
-        log=log
+        posts=posts, log=log
     )
-
 
 @app.route('/new_post', methods=['GET', 'POST'])
 @login_required
@@ -75,6 +48,7 @@ def new_post():
         imageSource=imageSourceUrl,
         form=form
     )
+
 
 
 @app.route('/post/<int:id>', methods=['GET', 'POST'])
